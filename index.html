@@ -339,6 +339,7 @@
       <div class="stat"><span class="num" id="securedCountHeader">0</span><span class="lbl">Secured</span></div>
       <div class="stat"><span class="num" id="sentCount">0</span><span class="lbl">In pipeline</span></div>
       <div class="stat"><span class="num" id="totalCount">0</span><span class="lbl">Total titles</span></div>
+      <div class="stat"><span class="num" id="ytdImpressions">&#8212;</span><span class="lbl">YTD Impressions</span></div>
     </div>
   </div>
 </header>
@@ -534,5 +535,11 @@
   document.getElementById('securedCount2').textContent = titles.length;
   document.getElementById('securedCountHeader').textContent = titles.length;
   document.getElementById('totalCount').textContent = titles.length + (window.__pipelineCount || 0);
+  // YTD = Nielsen broadcast + streaming for placements that aired this calendar year.
+  const year = String(new Date().getFullYear());
+  const ytd = titles
+    .filter(t => t.scenes.some(s => (s.sortDate || '').startsWith(year)))
+    .reduce((sum, t) => { const x = titleTotals(t); return sum + x.broadcast + x.streaming; }, 0);
+  document.getElementById('ytdImpressions').textContent = ytd ? fmtImpressions(ytd) : '\u2014';
 })();
 </script>
