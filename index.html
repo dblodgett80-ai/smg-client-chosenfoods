@@ -367,6 +367,7 @@
       <div class="stat"><span class="num" id="sentCount">0</span><span class="lbl">In pipeline</span></div>
       <div class="stat"><span class="num" id="totalCount">0</span><span class="lbl">Total titles</span></div>
       <div class="stat"><span class="num" id="ytdImpressions">&#8212;</span><span class="lbl">YTD Impressions</span></div>
+      <div class="stat"><span class="num" id="totalImpressions">&#8212;</span><span class="lbl">Total On-Going Campaign Impressions</span></div>
     </div>
   </div>
 </header>
@@ -649,6 +650,7 @@
     .filter(t => t.scenes.some(s => (s.sortDate || '').startsWith(year)))
     .reduce((sum, t) => { const x = titleTotals(t); return sum + x.broadcast + x.streaming; }, 0);
   document.getElementById('ytdImpressions').textContent = ytd ? fmtImpressions(ytd) : '\u2014';
+  window.__securedTotal = titles.reduce((sum, t) => { const x = titleTotals(t); return sum + x.broadcast + x.streaming; }, 0);
 })();
 </script>
 
@@ -682,6 +684,8 @@
   document.getElementById('pastTitles').textContent = past.length;
   document.getElementById('pastPlacements').textContent = past.reduce((a, t) => a + t.placements, 0);
   document.getElementById('pastImpressions').textContent = fmt(past.reduce((a, t) => a + t.impressions, 0));
+  // Header: all secured (broadcast + streaming) plus every past integration.
+  document.getElementById('totalImpressions').textContent = fmt((window.__securedTotal || 0) + past.reduce((a, t) => a + t.impressions, 0));
 
   // Tabs (remembers the open tab in the URL hash)
   const tabs = [...document.querySelectorAll('.tab')];
