@@ -105,7 +105,7 @@
   .prod-row .t{font-family:'Fraunces',serif; font-weight:600; font-size:16px; color:var(--text);}
   .prod-row .m{font-size:12px; color:var(--text-dim);}
   .prod-row .q{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold-strong); text-align:right; white-space:nowrap;}
-  .prod-empty{padding:16px 18px; font-size:13px; color:var(--text-dim);}
+  .prod-empty{border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-size:13px; color:var(--text-dim);}
   @media (max-width:640px){ .prod-row{grid-template-columns:1fr; gap:4px;} .prod-row .q{text-align:left;} }
   .past-stats{margin:4px 0 22px;}
   .past-desc{font-size:12px; line-height:1.5; color:var(--text-dim); margin:8px 0 0;}
@@ -485,11 +485,11 @@
   </div>
   <section class="group">
     <div class="group-head"><h2>Secured Placements</h2><span class="count" data-n="secured2"></span><span class="desc">Bottle Oil verified on screen</span></div>
-    <div class="prod-list" data-list="secured"></div>
+    <div class="grid-wide" data-list="secured"></div>
   </section>
   <section class="group">
     <div class="group-head"><h2>In the Pipeline</h2><span class="count" data-n="pipeline2"></span><span class="desc">Bottle Oil sent to set, placement pending air date</span></div>
-    <div class="prod-list" data-list="pipeline"></div>
+    <div class="grid" data-list="pipeline"></div>
   </section>
 </div>
 <div class="tab-panel prod-panel" id="tab-spray" data-prod="spray" hidden>
@@ -500,11 +500,11 @@
   </div>
   <section class="group">
     <div class="group-head"><h2>Secured Placements</h2><span class="count" data-n="secured2"></span><span class="desc">Spray Oil verified on screen</span></div>
-    <div class="prod-list" data-list="secured"></div>
+    <div class="grid-wide" data-list="secured"></div>
   </section>
   <section class="group">
     <div class="group-head"><h2>In the Pipeline</h2><span class="count" data-n="pipeline2"></span><span class="desc">Spray Oil sent to set, placement pending air date</span></div>
-    <div class="prod-list" data-list="pipeline"></div>
+    <div class="grid" data-list="pipeline"></div>
   </section>
 </div>
 <div class="tab-panel prod-panel" id="tab-mayo" data-prod="mayo" hidden>
@@ -515,11 +515,11 @@
   </div>
   <section class="group">
     <div class="group-head"><h2>Secured Placements</h2><span class="count" data-n="secured2"></span><span class="desc">Mayo verified on screen</span></div>
-    <div class="prod-list" data-list="secured"></div>
+    <div class="grid-wide" data-list="secured"></div>
   </section>
   <section class="group">
     <div class="group-head"><h2>In the Pipeline</h2><span class="count" data-n="pipeline2"></span><span class="desc">Mayo sent to set, placement pending air date</span></div>
-    <div class="prod-list" data-list="pipeline"></div>
+    <div class="grid" data-list="pipeline"></div>
   </section>
 </div>
 <div class="tab-panel prod-panel" id="tab-dressings" data-prod="dressings" hidden>
@@ -530,11 +530,11 @@
   </div>
   <section class="group">
     <div class="group-head"><h2>Secured Placements</h2><span class="count" data-n="secured2"></span><span class="desc">Dressings verified on screen</span></div>
-    <div class="prod-list" data-list="secured"></div>
+    <div class="grid-wide" data-list="secured"></div>
   </section>
   <section class="group">
     <div class="group-head"><h2>In the Pipeline</h2><span class="count" data-n="pipeline2"></span><span class="desc">Dressings sent to set, placement pending air date</span></div>
-    <div class="prod-list" data-list="pipeline"></div>
+    <div class="grid" data-list="pipeline"></div>
   </section>
 </div>
 <div class="tab-panel" id="tab-past" hidden>
@@ -617,6 +617,7 @@
   document.getElementById('sentCount').textContent = sent.length;
   document.getElementById('sentCount2').textContent = sent.length;
   window.__pipelineCount = sent.length;
+  window.__pipeCard = card; window.__pipeSorted = sent;
 })();
 </script>
 
@@ -740,6 +741,7 @@
     .filter(t => t.scenes.some(s => (s.sortDate || '').startsWith(year)))
     .reduce((sum, t) => { const x = titleTotals(t); return sum + x.broadcast + x.streaming; }, 0);
   document.getElementById('ytdImpressions').textContent = ytd ? fmtImpressions(ytd) : '\u2014';
+  window.__vcard = vcard;
   window.__securedTotal = titles.reduce((sum, t) => { const x = titleTotals(t); return sum + x.broadcast + x.streaming; }, 0);
 })();
 </script>
@@ -747,7 +749,7 @@
 <script>
 (function(){
   // Product-category tabs: secured placements + pipeline sends per product.
-  const shows = JSON.parse(document.getElementById('show-data').textContent).shows.filter(s => s.status === 'sent');
+  const shows = window.__pipeSorted || [];
   const secured = JSON.parse(document.getElementById('secured-data').textContent).titles;
   const RX = {
     bottle: /\b(avo(cado)? oil(?! (spray|shortening|mayo))|bottle[sd]?( oils?)?|chosen foods oil|organic avo oil)\b/i,
@@ -768,14 +770,11 @@
     set('secured', sec.length); set('pipeline', pipe.length); set('total', sec.length + pipe.length);
     set('secured2', sec.length); set('pipeline2', pipe.length);
     const sl = panel.querySelector('[data-list="secured"]');
-    sl.innerHTML = sec.length ? sec.map(t => {
-      const n = t.scenes.length;
-      return `<div class="prod-row"><span class="t">${t.title}</span><span class="m">${t.network} &#183; ${t.genre}</span><span class="q">${n} placement${n === 1 ? '' : 's'}</span></div>`;
-    }).join('') : '<div class="prod-empty">No secured placements yet. Pipeline titles below are the next opportunities.</div>';
+    if (sec.length) sec.forEach(t => sl.appendChild(window.__vcard(t)));
+    else sl.outerHTML = '<div class="prod-empty">No secured placements yet. Pipeline titles below are the next opportunities.</div>';
     const pl = panel.querySelector('[data-list="pipeline"]');
-    pl.innerHTML = pipe.length ? pipe.map(({ s, hits }) =>
-      `<div class="prod-row"><span class="t">${s.title}</span><span class="m">${s.platform}</span><span class="q">${hits.map(i => esc(i.qty) + ' &#183; ' + i.item).join('<br>')}</span></div>`
-    ).join('') : '<div class="prod-empty">None in the pipeline.</div>';
+    if (pipe.length) pipe.forEach(({ s }) => pl.appendChild(window.__pipeCard(s)));
+    else pl.outerHTML = '<div class="prod-empty">None in the pipeline.</div>';
   });
 })();
 </script>
