@@ -861,7 +861,7 @@
       return `<div class="yoy-row${ytd ? ' ytd' : ''}"><span class="yoy-yr"><b>${y}${ytd ? '*' : ''}</b>${ytd ? 'Year to date' : 'Full year'}</span><div class="yoy-track"><div class="yoy-bar" style="width:${(v / max * 100).toFixed(1)}%"></div></div><span class="yoy-val">${fmt(v)}</span>${chg}</div>`;
     }).join('');
     const total = years.reduce((a, y) => a + byYear[y], 0);
-    document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners. Following the dissolution of the previous agency, SMG Entertainment assumed the account and resumed product placement outreach, and the impact of that work is now building into the pipeline.</span></div>`;
+    document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
   })();
 
   // Tabs (remembers the open tab in the URL hash)
