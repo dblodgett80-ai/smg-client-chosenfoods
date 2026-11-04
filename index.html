@@ -106,6 +106,7 @@
   .yoy-val{font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:var(--text); text-align:right; font-variant-numeric:tabular-nums;}
   .yoy-chg{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold-strong); text-align:right;}
   .yoy-chg.flat{color:var(--text-dim);}
+  .yoy-note{display:block; margin-top:8px; font-style:italic;}
   .yoy-foot{font-size:12px; color:var(--text-dim); margin-top:4px; padding-top:12px; border-top:1px solid var(--line);}
   @media (max-width:640px){ .yoy-row{grid-template-columns:60px minmax(0,1fr) 72px; } .yoy-chg{grid-column:2 / 4; text-align:left;} }
   .tabs-inner{overflow-x:auto; scrollbar-width:none;}
@@ -857,10 +858,10 @@
       let chg = '<span class="yoy-chg flat">First year</span>';
       if (ytd) chg = `<span class="yoy-chg flat">YTD through ${today}</span>`;
       else if (prev) { const pct = Math.round((v - prev) / prev * 100); chg = `<span class="yoy-chg${pct ? '' : ' flat'}">${pct > 0 ? '+' : ''}${pct}% vs ${years[i - 1]}</span>`; }
-      return `<div class="yoy-row${ytd ? ' ytd' : ''}"><span class="yoy-yr"><b>${y}</b>${ytd ? 'Year to date' : 'Full year'}</span><div class="yoy-track"><div class="yoy-bar" style="width:${(v / max * 100).toFixed(1)}%"></div></div><span class="yoy-val">${fmt(v)}</span>${chg}</div>`;
+      return `<div class="yoy-row${ytd ? ' ytd' : ''}"><span class="yoy-yr"><b>${y}${ytd ? '*' : ''}</b>${ytd ? 'Year to date' : 'Full year'}</span><div class="yoy-track"><div class="yoy-bar" style="width:${(v / max * 100).toFixed(1)}%"></div></div><span class="yoy-val">${fmt(v)}</span>${chg}</div>`;
     }).join('');
     const total = years.reduce((a, y) => a + byYear[y], 0);
-    document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.</div>`;
+    document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners. Following the dissolution of the previous agency, SMG Entertainment assumed the account and resumed product placement outreach, and the impact of that work is now building into the pipeline.</span></div>`;
   })();
 
   // Tabs (remembers the open tab in the URL hash)
