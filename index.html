@@ -111,13 +111,17 @@
   @media (max-width:640px){ .yoy-row{grid-template-columns:60px minmax(0,1fr) 72px; } .yoy-chg{grid-column:2 / 4; text-align:left;} }
   .tabs-inner{overflow-x:auto; scrollbar-width:none;}
   .tab{white-space:nowrap;}
-  .filters{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); position:sticky; top:46px; z-index:15;}
+  .filters{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); position:sticky; top:0; z-index:15;}
   .filters-lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-right:4px;}
   .filters select{appearance:none; -webkit-appearance:none; background:var(--surface-raised) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c8a45d'/%3E%3C/svg%3E") no-repeat right 12px center; color:var(--text); border:1px solid var(--line); border-radius:100px; padding:8px 32px 8px 14px; font-family:'Manrope',sans-serif; font-size:13px; font-weight:600; cursor:pointer; max-width:100%;}
   .filters select:focus-visible, .btn-clear:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .btn-clear{background:none; border:1px solid var(--gold); color:var(--gold-strong); border-radius:100px; padding:7px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;}
   .filters-count{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
   .filter-shell{padding-top:24px;}
+  .year-head{display:flex; align-items:baseline; gap:12px; margin:32px 0 16px;}
+  .year-head:first-child{margin-top:0;}
+  .year-head h3{font-family:'Fraunces',serif; font-weight:600; font-size:20px; margin:0; color:var(--gold-strong);}
+  .year-head span{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
   .filter-note{font-size:12px; color:var(--text-dim); margin:0 0 14px;}
   .yoy-row.sel .yoy-yr b, .yoy-row.sel .yoy-val{color:var(--gold-strong);}
   .yoy-row.sel{outline:1px solid var(--gold); outline-offset:6px; border-radius:6px;}
@@ -401,12 +405,6 @@
   </div>
 </header>
 
-<nav class="tabs" role="tablist">
-  <div class="tabs-inner">
-    <button class="tab" role="tab" data-tab="current" aria-selected="true">Current Activity</button>
-    <button class="tab" role="tab" data-tab="past" aria-selected="false">Past Integrations</button>
-  </div>
-</nav>
 
 <div class="wrap">
 <div class="filter-shell">
@@ -512,9 +510,9 @@
     <div class="group-head">
       <h2>Secured Integrations</h2>
       <span class="count" id="securedCount2"></span>
-      <span class="desc">Verified on-screen placements with timestamped video proof</span>
+      <span class="desc">Verified on-screen placements with timestamped video proof, 2023&ndash;present</span>
     </div>
-    <div class="grid-wide" id="securedGrid"></div>
+    <div id="securedGrid"></div>
   </section>
 
 
@@ -527,21 +525,6 @@
     <div class="grid" id="sentGrid"></div>
   </section>
 
-</div>
-<div class="tab-panel" id="tab-past" hidden>
-  <section class="group">
-    <div class="group-head">
-      <h2>Past Integrations</h2>
-      <span class="count" id="pastCount"></span>
-      <span class="desc">Chosen Foods on-screen placements, 2023&ndash;2026</span>
-    </div>
-    <div class="stat-row past-stats">
-      <div class="stat"><span class="num" id="pastTitles">0</span><span class="lbl">Titles</span></div>
-      <div class="stat"><span class="num" id="pastPlacements">0</span><span class="lbl">Placements</span></div>
-      <div class="stat"><span class="num" id="pastImpressions">&#8212;</span><span class="lbl">30-Day Impressions</span></div>
-    </div>
-    <div class="grid-wide" id="pastGrid"></div>
-  </section>
 </div>
   <footer class="page-footer">
     <span>SMG Entertainment Strategy &amp; Marketing</span>
@@ -736,11 +719,10 @@
     el.dataset.products = (t.products || []).join(' ');
     el.dataset.format = t.channel === 'Film' ? 'film' : 'tv';
     el.dataset.years = [...new Set(t.scenes.map(s => (s.sortDate || '').slice(0, 4)).filter(Boolean))].join(' ');
+    el.dataset.sort = t.scenes.map(s => s.sortDate || '').sort().pop() || '';
+    el.dataset.title = t.title.toLowerCase();
     grid.appendChild(el);
   });
-  document.getElementById('securedCount2').textContent = titles.length;
-  document.getElementById('securedCountHeader').textContent = titles.length;
-  document.getElementById('totalCount').textContent = titles.length + (window.__pipelineCount || 0);
   // YTD = Nielsen broadcast + streaming for placements that aired this calendar year.
   const year = String(new Date().getFullYear());
   const ytd = titles
@@ -767,46 +749,55 @@
 
 <script>
 (function(){
-  // Product / format / year filters for Secured, Pipeline and Past Integrations (remembered in the URL).
+  // Product / format / year filters. Secured Integrations (2023-present) is sectioned by year.
   const P = document.getElementById('f-product'), F = document.getElementById('f-format'), Y = document.getElementById('f-year'), C = document.getElementById('f-clear');
   const NAMES = { bottle: 'Bottle Oil', spray: 'Spray Oil', mayo: 'Mayo', dressings: 'Dressings' };
-  const groups = [
-    { grid: document.getElementById('securedGrid'), count: document.getElementById('securedCount2'), empty: 'No secured placements for this filter. The pipeline titles below are the next opportunities.' },
-    { grid: document.getElementById('sentGrid'), count: document.getElementById('sentCount2'), empty: 'Nothing in the pipeline for this filter.' },
-    { grid: document.getElementById('pastGrid'), count: document.getElementById('pastCount'), empty: 'No past integrations for this filter.', past: true }
-  ];
+  const secRoot = document.getElementById('securedGrid'), pipe = document.getElementById('sentGrid');
+  let secCards = null;
+  const match = (c, p, f, y) => (!p || (c.dataset.products || '').split(' ').includes(p)) && (!f || c.dataset.format === f) && (!y || (c.dataset.years || '').split(' ').includes(y));
+  const latestYear = c => (c.dataset.years || '').split(' ').filter(Boolean).sort().pop() || 'TBD';
+  function emptyNote(after, show, text){
+    let e = after.parentNode.querySelector('.filter-empty');
+    if (show && !e) { e = document.createElement('div'); e.className = 'filter-empty'; after.after(e); }
+    if (e) { e.textContent = text; e.hidden = !show; }
+  }
   function apply(){
-    const p = P.value, f = F.value, y = Y.value, on = !!(p || f || y); const per = [];
-    groups.forEach(g => {
-      const cards = [...g.grid.children].filter(c => c.dataset.format);
-      const pp = g.past ? '' : p;   // past integrations don't carry product detail
-      let n = 0;
-      cards.forEach(c => {
-        const ok = (!pp || c.dataset.products.split(' ').includes(pp)) && (!f || c.dataset.format === f) && (!y || (c.dataset.years || '').split(' ').includes(y));
-        c.hidden = !ok; if (ok) n++;
-      });
-      g.count.textContent = (pp || f || y) ? n + ' of ' + cards.length : cards.length;
-      let e = g.grid.parentNode.querySelector('.filter-empty');
-      if (!n && !e) { e = document.createElement('div'); e.className = 'filter-empty'; g.grid.after(e); }
-      if (e) { e.textContent = g.empty; e.hidden = !!n; }
-      per.push([n, cards.length]);
+    if (!secCards) secCards = [...secRoot.children].filter(c => c.dataset.format);
+    const p = P.value, f = F.value, y = Y.value, on = !!(p || f || y);
+    // Secured: group matching cards by year (selected year, else each card's latest air year), newest first.
+    const hits = secCards.filter(c => match(c, p, f, y));
+    const byYr = {};
+    hits.forEach(c => { const k = y || latestYear(c); (byYr[k] = byYr[k] || []).push(c); });
+    secRoot.innerHTML = '';
+    Object.keys(byYr).sort((a, b) => a === 'TBD' ? 1 : b === 'TBD' ? -1 : b.localeCompare(a)).forEach(k => {
+      const cards = byYr[k].sort((a, b) => (b.dataset.sort || '').localeCompare(a.dataset.sort || ''));
+      const head = document.createElement('div'); head.className = 'year-head';
+      head.innerHTML = `<h3>${k === 'TBD' ? 'Air date TBD' : k}</h3><span>${cards.length} title${cards.length === 1 ? '' : 's'}</span>`;
+      const g = document.createElement('div'); g.className = 'grid-wide';
+      cards.forEach(c => g.appendChild(c));
+      secRoot.append(head, g);
     });
+    document.getElementById('securedCount2').textContent = on ? hits.length + ' of ' + secCards.length : secCards.length;
+    emptyNote(secRoot, !hits.length, 'No secured placements for this filter. The pipeline titles below are the next opportunities.');
+    // Pipeline
+    const pc = [...pipe.children].filter(c => c.dataset.format); let pn = 0;
+    pc.forEach(c => { const ok = match(c, p, f, y); c.hidden = !ok; if (ok) pn++; });
+    document.getElementById('sentCount2').textContent = on ? pn + ' of ' + pc.length : pc.length;
+    emptyNote(pipe, !pn, 'Nothing in the pipeline for this filter.');
     C.hidden = !on;
-    const cur = per[0][0] + per[1][0], curAll = per[0][1] + per[1][1];
-    document.getElementById('f-count').textContent = on ? `Current: ${cur} of ${curAll} \u00b7 Past: ${per[2][0]} of ${per[2][1]}` : `${curAll} current \u00b7 ${per[2][1]} past titles`;
-    const note = document.getElementById('f-note');
+    document.getElementById('f-count').textContent = on ? `Showing ${hits.length + pn} of ${secCards.length + pc.length} titles` : `${secCards.length + pc.length} titles`;
     const notes = [];
-    if (y) notes.push('Year = air year for secured and past placements, and the year product was sent for the pipeline.');
-    if (p) notes.push('Product detail is tracked for current activity; past integrations are filtered by year and format only.');
-    note.hidden = !notes.length; note.textContent = notes.join(' ');
-    const sum = document.getElementById('prod-summary');
-    sum.hidden = !on;
+    if (y) notes.push('Year = air year for secured placements, and the year product was sent for the pipeline.');
+    if (p) notes.push('Product detail is tracked from 2026 on, so earlier placements appear under All products.');
+    const note = document.getElementById('f-note'); note.hidden = !notes.length; note.textContent = notes.join(' ');
+    const sum = document.getElementById('prod-summary'); sum.hidden = !on;
     const label = [y, p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV' : ''].filter(Boolean).join(' ');
-    if (on) sum.innerHTML = `<div class="stat"><span class="num">${per[0][0]}</span><span class="lbl">${label} Secured</span></div><div class="stat"><span class="num">${per[1][0]}</span><span class="lbl">${label} in Pipeline</span></div><div class="stat"><span class="num">${per[2][0]}</span><span class="lbl">${[y, f === 'film' ? 'Film' : f === 'tv' ? 'TV' : ''].filter(Boolean).join(' ')} Past Integrations${p ? ' (all products)' : ''}</span></div>`;
+    if (on) sum.innerHTML = `<div class="stat"><span class="num">${hits.length}</span><span class="lbl">${label} Secured</span></div><div class="stat"><span class="num">${pn}</span><span class="lbl">${label} in Pipeline</span></div><div class="stat"><span class="num">${hits.length + pn}</span><span class="lbl">${label} Total</span></div>`;
     document.querySelectorAll('.yoy-row').forEach(r => r.classList.toggle('sel', !!y && r.querySelector('.yoy-yr b').textContent.startsWith(y)));
+    document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
     [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
-    const qs = q.toString(); history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    const qs = q.toString(); history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
   }
   window.__applyFilters = apply;
   const q = new URLSearchParams(location.search);
@@ -823,7 +814,7 @@
 (function(){
   const past = JSON.parse(document.getElementById('past-data').textContent).titles;
   const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M' : n >= 1e3 ? Math.round(n/1e3) + 'K' : String(n);
-  const grid = document.getElementById('pastGrid');
+  const grid = document.getElementById('securedGrid');
   past.forEach(t => {
     const el = document.createElement('article');
     el.className = 'vcard';
@@ -846,12 +837,14 @@
     el.dataset.format = t.format || 'tv';
     el.dataset.years = (t.years || []).join(' ');
     el.dataset.past = '1';
+    el.dataset.sort = t.sort === '0000' ? '' : t.sort;
+    el.dataset.title = t.title.toLowerCase().replace(/&#8217;/g, "'");
     grid.appendChild(el);
   });
-  document.getElementById('pastCount').textContent = past.length;
-  document.getElementById('pastTitles').textContent = past.length;
-  document.getElementById('pastPlacements').textContent = past.reduce((a, t) => a + t.placements, 0);
-  document.getElementById('pastImpressions').textContent = fmt(past.reduce((a, t) => a + t.impressions, 0));
+  // Header counts: every secured title since 2023 (a show secured in both eras counts once) plus the pipeline.
+  const uniq = new Set([...grid.children].map(c => c.dataset.title)).size;
+  document.getElementById('securedCountHeader').textContent = uniq;
+  document.getElementById('totalCount').textContent = uniq + (window.__pipelineCount || 0);
   // Header: all secured (broadcast + streaming) plus every past integration.
   document.getElementById('totalImpressions').textContent = fmt((window.__securedTotal || 0) + past.reduce((a, t) => a + t.impressions, 0));
 
@@ -874,16 +867,6 @@
     document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
   })();
 
-  // Tabs (remembers the open tab in the URL hash)
-  const tabs = [...document.querySelectorAll('.tab')];
-  function show(name){
-    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
-    document.querySelectorAll('.tab-panel').forEach(p => { p.hidden = p.id !== 'tab-' + name; });
-    document.querySelectorAll('video').forEach(v => v.pause());
-  }
-  tabs.forEach(b => b.addEventListener('click', () => { show(b.dataset.tab); history.replaceState(null, '', b.dataset.tab === 'current' ? '#' : '#' + b.dataset.tab); }));
-  const want = location.hash.slice(1);
-  show(tabs.some(b => b.dataset.tab === want) ? want : 'current');
   if (window.__applyFilters) window.__applyFilters();
 })();
 </script>
