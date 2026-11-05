@@ -123,6 +123,13 @@
   .btn-clear{background:none; border:1px solid var(--gold); color:var(--gold-strong); border-radius:100px; padding:7px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;}
   .filters-count{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
   .filter-shell{margin:22px 0 22px;}
+  .page-tabs{display:flex; gap:28px; margin:26px 0 0; border-bottom:1px solid var(--line);}
+  .ptab{background:none; border:0; border-bottom:2px solid transparent; padding:12px 0 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); cursor:pointer;}
+  .ptab[aria-selected="true"]{color:var(--gold-strong); border-bottom-color:var(--gold);}
+  .ptab:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+  body.on-agenda .filter-shell, body.on-agenda header .stat-row{display:none;}
+  #tab-agenda{padding-top:8px;}
+
   .year-head{display:flex; align-items:baseline; gap:12px; margin:32px 0 16px;}
   .year-head:first-child{margin-top:0;}
   .year-head h3{font-family:'Fraunces',serif; font-weight:600; font-size:20px; margin:0; color:var(--gold-strong);}
@@ -396,6 +403,10 @@
     </div>
     <h1 class="title">Chosen Foods in <em>Entertainment</em></h1>
     <p class="tagline">Every title the SMG entertainment team has placed Chosen Foods product with &#8212; verified on-screen placements, what's currently in the pipeline and where Chosen Foods product was sent. <em>Driven by culture. Placed with purpose.</em></p>
+<div class="page-tabs" role="tablist" aria-label="Sections">
+  <button class="ptab" role="tab" data-ptab="current" aria-selected="true">Placements</button>
+  <button class="ptab" role="tab" data-ptab="agenda" aria-selected="false">Agenda</button>
+</div>
 <div class="filter-shell">
   <div class="filters" id="filters" role="group" aria-label="Filter placements">
     <span class="filters-lbl">Filter</span>
@@ -440,6 +451,27 @@
     <div class="yoy" id="yoy"></div>
   </section>
 
+  <section class="group">
+    <div class="group-head">
+      <h2>Secured Integrations</h2>
+      <span class="count" id="securedCount2"></span>
+      <span class="desc">Verified on-screen placements with timestamped video proof, 2023&ndash;present</span>
+    </div>
+    <div id="securedGrid"></div>
+  </section>
+
+
+  <section class="group">
+    <div class="group-head">
+      <h2>In the Pipeline</h2>
+      <span class="count" id="sentCount2"></span>
+      <span class="desc">Product sent and placement pending air date</span>
+    </div>
+    <div class="grid" id="sentGrid"></div>
+  </section>
+
+</div>
+<div class="tab-panel" id="tab-agenda" hidden>
   <section class="group">
     <div class="group-head">
       <h2>Entertainment Industry Updates</h2>
@@ -501,25 +533,6 @@
     </div>
   </section>
 
-
-  <section class="group">
-    <div class="group-head">
-      <h2>Secured Integrations</h2>
-      <span class="count" id="securedCount2"></span>
-      <span class="desc">Verified on-screen placements with timestamped video proof, 2023&ndash;present</span>
-    </div>
-    <div id="securedGrid"></div>
-  </section>
-
-
-  <section class="group">
-    <div class="group-head">
-      <h2>In the Pipeline</h2>
-      <span class="count" id="sentCount2"></span>
-      <span class="desc">Product sent and placement pending air date</span>
-    </div>
-    <div class="grid" id="sentGrid"></div>
-  </section>
 
 </div>
   <footer class="page-footer">
@@ -823,7 +836,7 @@
     document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
     [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
-    const qs = q.toString(); history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    const qs = q.toString(); history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   }
   window.__applyFilters = apply;
   const q = new URLSearchParams(location.search);
@@ -877,5 +890,17 @@
 
 
   if (window.__applyFilters) window.__applyFilters();
+  // Page tabs: Placements (filters + stats + cards) and Agenda (industry updates + hot topics).
+  const ptabs = [...document.querySelectorAll('.ptab')];
+  function showTab(name){
+    ptabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptab === name)));
+    document.getElementById('tab-current').hidden = name !== 'current';
+    document.getElementById('tab-agenda').hidden = name !== 'agenda';
+    document.body.classList.toggle('on-agenda', name === 'agenda');
+    document.querySelectorAll('video').forEach(v => v.pause());
+  }
+  ptabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.ptab); history.replaceState(null, '', location.pathname + location.search + (b.dataset.ptab === 'agenda' ? '#agenda' : '')); }));
+  showTab(location.hash === '#agenda' ? 'agenda' : 'current');
+
 })();
 </script>
