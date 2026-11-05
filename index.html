@@ -115,13 +115,13 @@
   .yoy-note{display:block; margin-top:8px; font-style:italic;}
   .tabs-inner{overflow-x:auto; scrollbar-width:none;}
   .tab{white-space:nowrap;}
-  .filters{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); position:sticky; top:0; z-index:15;}
+  .filters{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
   .filters-lbl{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-right:4px;}
   .filters select{appearance:none; -webkit-appearance:none; background:var(--surface-raised) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c8a45d'/%3E%3C/svg%3E") no-repeat right 12px center; color:var(--text); border:1px solid var(--line); border-radius:100px; padding:8px 32px 8px 14px; font-family:'Manrope',sans-serif; font-size:13px; font-weight:600; cursor:pointer; max-width:100%;}
   .filters select:focus-visible, .btn-clear:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .btn-clear{background:none; border:1px solid var(--gold); color:var(--gold-strong); border-radius:100px; padding:7px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;}
   .filters-count{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
-  .filter-shell{padding-top:24px;}
+  .filter-shell{margin:22px 0 22px;}
   .year-head{display:flex; align-items:baseline; gap:12px; margin:32px 0 16px;}
   .year-head:first-child{margin-top:0;}
   .year-head h3{font-family:'Fraunces',serif; font-weight:600; font-size:20px; margin:0; color:var(--gold-strong);}
@@ -395,18 +395,6 @@
     </div>
     <h1 class="title">Chosen Foods in <em>Entertainment</em></h1>
     <p class="tagline">Every title the SMG entertainment team has placed Chosen Foods product with &#8212; verified on-screen placements, what's currently in the pipeline and where Chosen Foods product was sent. <em>Driven by culture. Placed with purpose.</em></p>
-    <div class="stat-row">
-      <div class="stat"><span class="num" id="securedCountHeader">0</span><span class="lbl" id="securedCountHeader-lbl">Secured</span></div>
-      <div class="stat"><span class="num" id="sentCount">0</span><span class="lbl" id="sentCount-lbl">In pipeline</span></div>
-      <div class="stat"><span class="num" id="totalCount">0</span><span class="lbl" id="totalCount-lbl">Total titles</span></div>
-      <div class="stat"><span class="num" id="ytdImpressions">&#8212;</span><span class="lbl" id="ytdImpressions-lbl">YTD Impressions</span></div>
-      <div class="stat"><span class="num" id="totalImpressions">&#8212;</span><span class="lbl" id="totalImpressions-lbl">Total On-Going Campaign Impressions</span></div>
-    </div>
-  </div>
-</header>
-
-
-<div class="wrap">
 <div class="filter-shell">
   <div class="filters" id="filters" role="group" aria-label="Filter placements">
     <span class="filters-lbl">Filter</span>
@@ -434,6 +422,18 @@
   </div>
   <div class="filter-note" id="f-note" hidden></div>
 </div>
+    <div class="stat-row">
+      <div class="stat"><span class="num" id="securedCountHeader">0</span><span class="lbl" id="securedCountHeader-lbl">Secured</span></div>
+      <div class="stat"><span class="num" id="sentCount">0</span><span class="lbl" id="sentCount-lbl">In pipeline</span></div>
+      <div class="stat"><span class="num" id="totalCount">0</span><span class="lbl" id="totalCount-lbl">Total titles</span></div>
+      <div class="stat"><span class="num" id="ytdImpressions">&#8212;</span><span class="lbl" id="ytdImpressions-lbl">YTD Impressions</span></div>
+      <div class="stat"><span class="num" id="totalImpressions">&#8212;</span><span class="lbl" id="totalImpressions-lbl">Total On-Going Campaign Impressions</span></div>
+    </div>
+  </div>
+</header>
+
+
+<div class="wrap">
 <div class="tab-panel" id="tab-current">
   <section class="group">
     <div class="group-head">
