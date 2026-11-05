@@ -99,7 +99,8 @@
   .yoy{border:1px solid var(--line); border-radius:12px; padding:22px 22px 16px; background:rgba(255,255,255,.02);}
   .yoy-chart{display:grid; grid-template-columns:repeat(var(--n,4),minmax(0,1fr)); gap:clamp(12px,4vw,40px); align-items:end; height:260px; padding:0 4px; border-bottom:1px solid var(--line);}
   .yoy-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0;}
-  .yoy-val{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(15px,2.4vw,20px); color:var(--text); margin-bottom:8px; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .yoy-val{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(15px,2.4vw,20px); color:var(--text); margin-bottom:2px; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .yoy-unit{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px;}
   .yoy-bar{width:min(100%,96px); border-radius:6px 6px 0 0; background:var(--gold); min-height:2px; transition:height .35s ease, opacity .25s;}
   .yoy-col.ytd .yoy-bar{background:repeating-linear-gradient(135deg,var(--gold-strong) 0 8px,var(--gold) 8px 16px);}
   .yoy-chart.has-sel .yoy-col:not(.sel) .yoy-bar{opacity:.3;}
@@ -806,7 +807,7 @@
     secCards.filter(c => match(c, p, f, '')).forEach(c => Object.entries(JSON.parse(c.dataset.impy || '{}')).forEach(([k, v]) => { if (k in byYear) byYear[k] += v; }));
     const cur = String(new Date().getFullYear()), yrs = Object.keys(byYear).sort(), max = Math.max(1, ...yrs.map(k => byYear[k]));
     const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const cols = yrs.map(k => `<div class="yoy-col${k === cur ? ' ytd' : ''}${k === y ? ' sel' : ''}"><span class="yoy-val">${byYear[k] ? fmt(byYear[k]) : (p && k < '2026' ? 'Not tracked' : '\u2014')}</span><div class="yoy-bar" style="height:${(byYear[k] / max * 78).toFixed(1)}%"></div></div>`).join('');
+    const cols = yrs.map(k => `<div class="yoy-col${k === cur ? ' ytd' : ''}${k === y ? ' sel' : ''}"><span class="yoy-val">${byYear[k] ? fmt(byYear[k]) : (p && k < '2026' ? 'Not tracked' : '\u2014')}</span>${byYear[k] ? '<span class="yoy-unit">Impressions</span>' : ''}<div class="yoy-bar" style="height:${(byYear[k] / max * 78).toFixed(1)}%"></div></div>`).join('');
     const axis = yrs.map((k, i) => {
       const v = byYear[k], prev = i ? byYear[yrs[i - 1]] : 0;
       let chg = i ? '' : 'First year';
@@ -818,7 +819,7 @@
     const totalY = yrs.reduce((a, k) => a + byYear[k], 0);
     document.getElementById('yoy').innerHTML = `<div class="yoy-scope">${scope ? 'Showing: ' + scope : 'All products \u00b7 All formats'}${y ? ' \u00b7 ' + y + ' highlighted' : ''}</div>`
       + `<div class="yoy-chart${y ? ' has-sel' : ''}" style="--n:${yrs.length}" role="img" aria-label="Impressions by year">${cols}</div><div class="yoy-axis" style="--n:${yrs.length}">${axis}</div>`
-      + `<div class="yoy-foot">${fmt(totalY)} total impressions since ${yrs[0]}${scope ? ' for this selection' : ''}. ${cur} figures update as new Nielsen data comes in.${p ? ' Product detail is tracked from 2026 on.' : ''}<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
+      + `<div class="yoy-foot">${cur} figures update as new Nielsen data comes in.${p ? ' Product detail is tracked from 2026 on.' : ''}<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
     document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
     [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
