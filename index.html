@@ -124,6 +124,7 @@
   .btn-clear{background:none; border:1px solid var(--gold); color:var(--gold-strong); border-radius:100px; padding:7px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; cursor:pointer;}
   .filters-count{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
   .filter-shell{margin:22px 0 22px;}
+  .h2-sel{color:var(--gold-strong); font-weight:500;}
   .page-tabs{display:flex; gap:28px; margin:26px 0 0; border-bottom:1px solid var(--line);}
   .ptab{background:none; border:0; border-bottom:2px solid transparent; padding:12px 0 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); cursor:pointer;}
   .ptab[aria-selected="true"]{color:var(--gold-strong); border-bottom-color:var(--gold);}
@@ -454,7 +455,7 @@
 
   <section class="group">
     <div class="group-head">
-      <h2>Secured Integrations</h2>
+      <h2 id="secured-h2">Secured Integrations</h2>
       <span class="count" id="securedCount2"></span>
       <span class="desc">Verified on-screen placements with timestamped video proof, 2023&ndash;present</span>
     </div>
@@ -464,7 +465,7 @@
 
   <section class="group">
     <div class="group-head">
-      <h2>In the Pipeline</h2>
+      <h2 id="pipeline-h2">In the Pipeline</h2>
       <span class="count" id="sentCount2"></span>
       <span class="desc">Product sent and placement pending air date</span>
     </div>
@@ -803,6 +804,11 @@
     if (y) notes.push('Year = air year for secured placements, and the year product was sent for the pipeline.');
     if (p) notes.push('Products for 2023\u20132025 placements come from the placement descriptions; a few placements don\u2019t name a product and show only under All products.');
     const note = document.getElementById('f-note'); note.hidden = !notes.length; note.textContent = notes.join(' ');
+    // Section titles name the active selection, e.g. "Secured Integrations | Mayo".
+    const sel = [p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV' : '', y].filter(Boolean).join(' \u00b7 ');
+    const tag = sel ? ` <span class="h2-sel">| ${sel}</span>` : '';
+    document.getElementById('secured-h2').innerHTML = 'Secured Integrations' + tag;
+    document.getElementById('pipeline-h2').innerHTML = 'In the Pipeline' + tag;
     // Header roll-up follows the dropdowns.
     const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M' : n >= 1e3 ? Math.round(n / 1e3) + 'K' : String(n);
     const pre = [y, p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV' : ''].filter(Boolean).join(' ');
