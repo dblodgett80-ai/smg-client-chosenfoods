@@ -113,6 +113,8 @@
   .yoy-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
   .yoy-title{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);}
   .yoy-scope{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-strong);}
+  .yoy-axis{align-items:start;}
+  .yoy-caveat{display:block; margin:8px auto 0; max-width:240px; font-size:11px; line-height:1.45; font-style:italic; color:var(--text-dim);}
   .yoy-foot{font-size:12px; color:var(--text-dim); margin-top:14px; padding-top:12px; border-top:1px solid var(--line);}
   .yoy-note{display:block; margin-top:8px; font-style:italic;}
   .tabs-inner{overflow-x:auto; scrollbar-width:none;}
@@ -833,13 +835,12 @@
       let chg = '';
       if (k === cur) chg = 'YTD through ' + today;
       else if (prev && v) { const pct = Math.round((v - prev) / prev * 100); chg = `${pct > 0 ? '+' : ''}${pct}% vs ${yrs[i - 1]}`; }
-      return `<div class="${k === y ? 'sel' : ''}"><span class="yoy-yr">${k}${k === cur ? '*' : ''}</span><span class="yoy-chg${/%/.test(chg) ? '' : ' flat'}">${chg || '&nbsp;'}</span></div>`;
+      return `<div class="${k === y ? 'sel' : ''}"><span class="yoy-yr">${k}${k === cur ? '*' : ''}</span><span class="yoy-chg${/%/.test(chg) ? '' : ' flat'}">${chg || '&nbsp;'}</span>${k === cur ? '<span class="yoy-caveat">*Reflects a four-month pause in product seeding during the transition between agency partners. Figures update as new Nielsen data comes in.</span>' : ''}</div>`;
     }).join('');
     const scope = [p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV series' : ''].filter(Boolean).join(' \u00b7 ');
     const totalY = yrs.reduce((a, k) => a + byYear[k], 0);
     document.getElementById('yoy').innerHTML = `<div class="yoy-top"><span class="yoy-title">Impressions by year</span>${scope || y ? `<span class="yoy-scope">${[scope, y ? y + ' highlighted' : ''].filter(Boolean).join(' \u00b7 ')}</span>` : ''}</div>`
-      + `<div class="yoy-chart${y ? ' has-sel' : ''}" style="--n:${yrs.length}" role="img" aria-label="Impressions by year">${cols}</div><div class="yoy-axis" style="--n:${yrs.length}">${axis}</div>`
-      + `<div class="yoy-foot">*${cur} is year to date and reflects a four-month pause in product seeding during the transition between agency partners. Figures update as new Nielsen data comes in.</div>`;
+      + `<div class="yoy-chart${y ? ' has-sel' : ''}" style="--n:${yrs.length}" role="img" aria-label="Impressions by year">${cols}</div><div class="yoy-axis" style="--n:${yrs.length}">${axis}</div>`;
     document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
     [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
