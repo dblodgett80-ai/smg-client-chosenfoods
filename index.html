@@ -96,19 +96,23 @@
   .tab[aria-selected="true"]{color:var(--gold-strong); border-bottom-color:var(--gold);}
   .tab:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
   .tab-panel{padding-top:32px;}
-  .yoy{display:flex; flex-direction:column; gap:14px; border:1px solid var(--line); border-radius:12px; padding:20px 22px; background:rgba(255,255,255,.02);}
-  .yoy-row{display:grid; grid-template-columns:84px minmax(0,1fr) 92px 110px; gap:16px; align-items:center;}
-  .yoy-yr{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.08em; color:var(--text-dim);}
-  .yoy-yr b{display:block; font-family:'Fraunces',serif; font-size:18px; font-weight:600; letter-spacing:0; color:var(--text);}
-  .yoy-track{height:14px; border-radius:7px; background:var(--sent-bg); overflow:hidden;}
-  .yoy-bar{height:100%; border-radius:7px; background:var(--gold);}
-  .yoy-row.ytd .yoy-bar{background:var(--gold-strong);}
-  .yoy-val{font-family:'Fraunces',serif; font-weight:600; font-size:20px; color:var(--text); text-align:right; font-variant-numeric:tabular-nums;}
-  .yoy-chg{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold-strong); text-align:right;}
+  .yoy{border:1px solid var(--line); border-radius:12px; padding:22px 22px 16px; background:rgba(255,255,255,.02);}
+  .yoy-chart{display:grid; grid-template-columns:repeat(var(--n,4),minmax(0,1fr)); gap:clamp(12px,4vw,40px); align-items:end; height:260px; padding:0 4px; border-bottom:1px solid var(--line);}
+  .yoy-col{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0;}
+  .yoy-val{font-family:'Fraunces',serif; font-weight:600; font-size:clamp(15px,2.4vw,20px); color:var(--text); margin-bottom:8px; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .yoy-bar{width:min(100%,96px); border-radius:6px 6px 0 0; background:var(--gold); min-height:2px; transition:height .35s ease, opacity .25s;}
+  .yoy-col.ytd .yoy-bar{background:repeating-linear-gradient(135deg,var(--gold-strong) 0 8px,var(--gold) 8px 16px);}
+  .yoy-chart.has-sel .yoy-col:not(.sel) .yoy-bar{opacity:.3;}
+  .yoy-chart.has-sel .yoy-col:not(.sel) .yoy-val{color:var(--text-dim);}
+  .yoy-col.sel .yoy-val{color:var(--gold-strong);}
+  .yoy-axis{display:grid; grid-template-columns:repeat(var(--n,4),minmax(0,1fr)); gap:clamp(12px,4vw,40px); padding:10px 4px 0; text-align:center;}
+  .yoy-yr{font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--text);}
+  .yoy-axis .sel .yoy-yr{color:var(--gold-strong);}
+  .yoy-chg{display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold-strong); margin-top:2px;}
   .yoy-chg.flat{color:var(--text-dim);}
+  .yoy-scope{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-strong); margin-bottom:14px;}
+  .yoy-foot{font-size:12px; color:var(--text-dim); margin-top:14px; padding-top:12px; border-top:1px solid var(--line);}
   .yoy-note{display:block; margin-top:8px; font-style:italic;}
-  .yoy-foot{font-size:12px; color:var(--text-dim); margin-top:4px; padding-top:12px; border-top:1px solid var(--line);}
-  @media (max-width:640px){ .yoy-row{grid-template-columns:60px minmax(0,1fr) 72px; } .yoy-chg{grid-column:2 / 4; text-align:left;} }
   .tabs-inner{overflow-x:auto; scrollbar-width:none;}
   .tab{white-space:nowrap;}
   .filters{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; padding:12px 14px; border:1px solid var(--line); border-radius:12px; background:var(--surface); position:sticky; top:0; z-index:15;}
@@ -123,8 +127,6 @@
   .year-head h3{font-family:'Fraunces',serif; font-weight:600; font-size:20px; margin:0; color:var(--gold-strong);}
   .year-head span{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim);}
   .filter-note{font-size:12px; color:var(--text-dim); margin:0 0 14px;}
-  .yoy-row.sel .yoy-yr b, .yoy-row.sel .yoy-val{color:var(--gold-strong);}
-  .yoy-row.sel{outline:1px solid var(--gold); outline-offset:6px; border-radius:6px;}
   .filter-empty{border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-size:13px; color:var(--text-dim);}
   @media (max-width:640px){ .filters{position:static;} .filters-count{margin-left:0; width:100%;} }
   .past-stats{margin:4px 0 22px;}
@@ -803,7 +805,24 @@
     setStat('totalCount', secU + pn, (pre ? pre + ' ' : '') + 'Total titles');
     setStat('ytdImpressions', yImp ? fmt(yImp) : '\u2014', y ? y + ' Impressions' : 'YTD Impressions');
     setStat('totalImpressions', allImp ? fmt(allImp) : '\u2014', on ? 'Campaign Impressions for selected titles' : 'Total On-Going Campaign Impressions');
-    document.querySelectorAll('.yoy-row').forEach(r => r.classList.toggle('sel', !!y && r.querySelector('.yoy-yr b').textContent.startsWith(y)));
+    // Year-over-year bar chart: titles matching Product + Format, every year shown, selected year highlighted.
+    const byYear = { 2023: 0, 2024: 0, 2025: 0, 2026: 0 };
+    secCards.filter(c => match(c, p, f, '')).forEach(c => Object.entries(JSON.parse(c.dataset.impy || '{}')).forEach(([k, v]) => { if (k in byYear) byYear[k] += v; }));
+    const cur = String(new Date().getFullYear()), yrs = Object.keys(byYear).sort(), max = Math.max(1, ...yrs.map(k => byYear[k]));
+    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const cols = yrs.map(k => `<div class="yoy-col${k === cur ? ' ytd' : ''}${k === y ? ' sel' : ''}"><span class="yoy-val">${byYear[k] ? fmt(byYear[k]) : (p && k < '2026' ? 'Not tracked' : '\u2014')}</span><div class="yoy-bar" style="height:${(byYear[k] / max * 78).toFixed(1)}%"></div></div>`).join('');
+    const axis = yrs.map((k, i) => {
+      const v = byYear[k], prev = i ? byYear[yrs[i - 1]] : 0;
+      let chg = i ? '' : 'First year';
+      if (k === cur) chg = 'YTD through ' + today;
+      else if (prev && v) { const pct = Math.round((v - prev) / prev * 100); chg = `${pct > 0 ? '+' : ''}${pct}% vs ${yrs[i - 1]}`; }
+      return `<div class="${k === y ? 'sel' : ''}"><span class="yoy-yr">${k}${k === cur ? '*' : ''}</span><span class="yoy-chg${/%/.test(chg) ? '' : ' flat'}">${chg || '&nbsp;'}</span></div>`;
+    }).join('');
+    const scope = [p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV series' : ''].filter(Boolean).join(' \u00b7 ');
+    const totalY = yrs.reduce((a, k) => a + byYear[k], 0);
+    document.getElementById('yoy').innerHTML = `<div class="yoy-scope">${scope ? 'Showing: ' + scope : 'All products \u00b7 All formats'}${y ? ' \u00b7 ' + y + ' highlighted' : ''}</div>`
+      + `<div class="yoy-chart${y ? ' has-sel' : ''}" style="--n:${yrs.length}" role="img" aria-label="Impressions by year">${cols}</div><div class="yoy-axis" style="--n:${yrs.length}">${axis}</div>`
+      + `<div class="yoy-foot">${fmt(totalY)} total impressions since ${yrs[0]}${scope ? ' for this selection' : ''}. ${cur} figures update as new Nielsen data comes in.${p ? ' Product detail is tracked from 2026 on.' : ''}<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
     document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
     [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
@@ -859,24 +878,6 @@
   // Header: all secured (broadcast + streaming) plus every past integration.
   document.getElementById('totalImpressions').textContent = fmt((window.__securedTotal || 0) + past.reduce((a, t) => a + t.impressions, 0));
 
-  // Year-over-year impressions: past integrations (BEN 30-day, by air year) + secured (Nielsen broadcast + streaming).
-  (function(){
-    const byYear = Object.assign({}, JSON.parse(document.getElementById('past-data').textContent).byYear || {});
-    Object.entries(window.__securedByYear || {}).forEach(([y, v]) => { byYear[y] = (byYear[y] || 0) + v; });
-    const years = Object.keys(byYear).filter(y => byYear[y] > 0).sort();
-    const cur = String(new Date().getFullYear());
-    const max = Math.max(...years.map(y => byYear[y]));
-    const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    const rows = years.map((y, i) => {
-      const v = byYear[y], prev = i ? byYear[years[i - 1]] : 0, ytd = y === cur;
-      let chg = '<span class="yoy-chg flat">First year</span>';
-      if (ytd) chg = `<span class="yoy-chg flat">YTD through ${today}</span>`;
-      else if (prev) { const pct = Math.round((v - prev) / prev * 100); chg = `<span class="yoy-chg${pct ? '' : ' flat'}">${pct > 0 ? '+' : ''}${pct}% vs ${years[i - 1]}</span>`; }
-      return `<div class="yoy-row${ytd ? ' ytd' : ''}"><span class="yoy-yr"><b>${y}${ytd ? '*' : ''}</b>${ytd ? 'Year to date' : 'Full year'}</span><div class="yoy-track"><div class="yoy-bar" style="width:${(v / max * 100).toFixed(1)}%"></div></div><span class="yoy-val">${fmt(v)}</span>${chg}</div>`;
-    }).join('');
-    const total = years.reduce((a, y) => a + byYear[y], 0);
-    document.getElementById('yoy').innerHTML = rows + `<div class="yoy-foot">${fmt(total)} total impressions since ${years[0]}. ${cur} figures update as new Nielsen data comes in.<span class="yoy-note">*${cur} reflects a four-month pause in product seeding during the transition between agency partners.</span></div>`;
-  })();
 
   if (window.__applyFilters) window.__applyFilters();
 })();
