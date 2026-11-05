@@ -839,7 +839,7 @@
       let chg = '';
       if (k === cur) chg = 'YTD through ' + today;
       else if (prev && v) { const pct = Math.round((v - prev) / prev * 100); chg = `${pct > 0 ? '+' : ''}${pct}% vs ${yrs[i - 1]}`; }
-      return `<div class="${k === y ? 'sel' : ''}"><span class="yoy-yr">${k}${k === cur ? '*' : ''}</span><span class="yoy-chg${/%/.test(chg) ? '' : ' flat'}">${chg || '&nbsp;'}</span>${k === cur ? '<span class="yoy-caveat">*Reflects a four-month pause in product seeding during the transition between agency partners. Figures update as new Nielsen data comes in.</span>' : ''}</div>`;
+      return `<div class="${k === y ? 'sel' : ''}"><span class="yoy-yr">${k}${k === cur ? '*' : ''}</span><span class="yoy-chg${/%/.test(chg) ? '' : ' flat'}">${chg || '&nbsp;'}</span>${k === cur ? '<span class="yoy-caveat">*Reflects a four-month pause in product seeding during the transition between agency partners.</span>' : ''}</div>`;
     }).join('');
     const scope = [p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV series' : ''].filter(Boolean).join(' \u00b7 ');
     const totalY = yrs.reduce((a, k) => a + byYear[k], 0);
