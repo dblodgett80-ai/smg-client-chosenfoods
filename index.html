@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Chosen Foods Placement Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,7 +172,38 @@
   .ptab{background:none; border:0; border-bottom:2px solid transparent; padding:12px 0 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); cursor:pointer;}
   .ptab[aria-selected="true"]{color:var(--gold-strong); border-bottom-color:var(--gold);}
   .ptab:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
-  body.on-agenda .filter-shell, body.on-agenda header .stat-row{display:none;}
+  body.on-agenda .filter-shell, body.on-agenda header .stat-row, body.on-inventory .filter-shell, body.on-inventory header .stat-row, body.on-inventory .coming{display:none;}
+  #tab-inventory{padding-top:8px;}
+  .inv-sum{display:flex; flex-wrap:wrap; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:0 0 20px;}
+  .inv-sum div{flex:1 1 120px; background:var(--surface); padding:14px 16px;}
+  .inv-sum b{display:block; font-family:'Fraunces',serif; font-weight:600; font-size:26px; line-height:1.1; color:var(--text); font-variant-numeric:tabular-nums;}
+  .inv-sum span{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim);}
+  .inv-tools{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 14px;}
+  .inv-tools input,.inv-tools select,.inv-tools button{background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:9px 12px; font:inherit; font-size:13.5px;}
+  .inv-tools input{flex:1 1 220px; min-width:0;}
+  .inv-tools button{cursor:pointer; color:var(--gold-strong);}
+  .inv-tools button:hover{border-color:var(--gold);}
+  .inv-tools .n{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; color:var(--text-dim); text-transform:uppercase;}
+  .inv-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--surface);}
+  table.inv{width:100%; border-collapse:collapse; font-size:13.5px; min-width:900px;}
+  table.inv th{position:sticky; top:0; background:var(--surface-raised); text-align:left; font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); padding:11px 10px; border-bottom:1px solid var(--line); white-space:nowrap; cursor:pointer; user-select:none;}
+  table.inv th[aria-sort]{color:var(--gold-strong);}
+  table.inv th[aria-sort=ascending]::after{content:' \2191';} table.inv th[aria-sort=descending]::after{content:' \2193';}
+  table.inv td{padding:12px 10px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.4;}
+  table.inv tr:last-child td{border-bottom:0;}
+  table.inv tbody tr:hover td{background:var(--surface-raised);}
+  .inv .t{font-weight:600; color:var(--text);} .inv .sub{color:var(--text-dim); font-size:12.5px;}
+  .inv ul{list-style:none; margin:0; padding:0;} .inv li{display:grid; grid-template-columns:3.4em 1fr; gap:4px;} .inv li .q{color:var(--gold-strong); font-variant-numeric:tabular-nums;}
+  .inv li.ord{display:block; margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.06em; color:var(--text-dim); text-transform:uppercase;}
+  .inv .chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:6px;}
+  .inv .chip{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; padding:2px 6px; border-radius:4px; background:var(--sent-bg); color:var(--text-dim); border:1px solid var(--line);}
+  .inv .num{font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .inv .st{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:3px 7px; border-radius:4px; white-space:nowrap; border:1px solid var(--line); color:var(--text-dim);}
+  .inv .st.aired{background:var(--aired-bg); color:var(--gold-strong); border-color:#4a3a1c;}
+  .inv .st.dated{color:var(--text); border-color:var(--gold);}
+  .inv .note{color:var(--text-dim); font-size:12.5px; margin-top:4px; max-width:300px;}
+  table.inv td:first-child{min-width:220px;} table.inv td:nth-child(4){min-width:210px;} table.inv td:nth-child(3){white-space:nowrap;}
+  .inv-foot{margin:10px 2px 0; color:var(--text-dim); font-size:12px;}
   #tab-agenda{padding-top:8px;}
 
   .year-head{display:flex; align-items:baseline; gap:12px; margin:32px 0 16px;}
@@ -450,6 +482,7 @@
 <div class="page-tabs" role="tablist" aria-label="Sections">
   <button class="ptab" role="tab" data-ptab="current" aria-selected="true">Placements</button>
   <button class="ptab" role="tab" data-ptab="agenda" aria-selected="false">Agenda</button>
+  <button class="ptab" role="tab" data-ptab="inventory" aria-selected="false">Inventory</button>
 </div>
 <div class="filter-shell">
   <div class="filters" id="filters" role="group" aria-label="Filter placements">
@@ -527,6 +560,27 @@
     <div class="grid" id="sentGrid"></div>
   </section>
 
+</div>
+<div class="tab-panel" id="tab-inventory" hidden>
+  <section class="group">
+    <div class="group-head">
+      <h2>Product Inventory</h2>
+      <span class="desc">Every title sent Chosen Foods product</span>
+    </div>
+    <div class="inv-sum" id="invSum"></div>
+    <div class="inv-tools">
+      <input type="search" id="invQ" placeholder="Search title, studio or notes" aria-label="Search inventory">
+      <select id="invP" aria-label="Product"><option value="">All products</option><option value="bottle">Bottle Oil</option><option value="spray">Spray Oil</option><option value="mayo">Mayo</option><option value="dressings">Dressings</option></select>
+      <select id="invS" aria-label="Status"><option value="">All statuses</option><option value="aired">Premiered / released</option><option value="dated">Air date set</option><option value="tbd">Air date TBD</option></select>
+      <button type="button" id="invCsv">Download CSV</button>
+      <span class="n" id="invN"></span>
+    </div>
+    <div class="inv-wrap"><table class="inv" id="invT">
+      <thead><tr><th data-k="title">Title</th><th data-k="studio">Studio / Platform</th><th data-k="format">Format</th><th data-k="items" data-nosort>Product Sent</th><th data-k="sent">Sent</th><th data-k="days">Days Out</th><th data-k="airSort">Pending Air Date</th><th data-k="statusSort">Status</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <p class="inv-foot">Sent dates are the order or ship date. Titles move to Secured Integrations on the Placements tab once Chosen Foods is verified on screen.</p>
+  </section>
 </div>
 <div class="tab-panel" id="tab-agenda" hidden>
   <section class="group">
@@ -1011,11 +1065,88 @@
     ptabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.ptab === name)));
     document.getElementById('tab-current').hidden = name !== 'current';
     document.getElementById('tab-agenda').hidden = name !== 'agenda';
+    document.getElementById('tab-inventory').hidden = name !== 'inventory';
     document.body.classList.toggle('on-agenda', name === 'agenda');
+    document.body.classList.toggle('on-inventory', name === 'inventory');
     document.querySelectorAll('video').forEach(v => v.pause());
   }
-  ptabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.ptab); history.replaceState(null, '', location.pathname + location.search + (b.dataset.ptab === 'agenda' ? '#agenda' : '')); }));
-  showTab(location.hash === '#agenda' ? 'agenda' : 'current');
+  ptabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.ptab); history.replaceState(null, '', location.pathname + location.search + (b.dataset.ptab !== 'current' ? '#' + b.dataset.ptab : '')); }));
+  showTab(['#agenda', '#inventory'].includes(location.hash) ? location.hash.slice(1) : 'current');
+
+  // Inventory tab: strict list of every send in show-data (no showcards). Sortable, searchable, CSV export.
+  (function(){
+    const shows = JSON.parse(document.getElementById('show-data').textContent).shows;
+    const dec = s => { const t = document.createElement('textarea'); t.innerHTML = s || ''; return t.value; };
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const today = new Date(); today.setHours(0,0,0,0);
+    const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const fd = iso => { const [y,m,d] = iso.split('-').map(Number); return MON[m-1] + ' ' + d + ', ' + y; };
+    const cats = item => { const s = item.toLowerCase(), o = [];
+      if (/portfolio/.test(s)) return ['bottle','spray','mayo','dressings'];
+      if (/spray/.test(s)) o.push('spray');
+      if (/mayo/.test(s)) o.push('mayo');
+      if (/dressing|ranch/.test(s)) o.push('dressings');
+      if (!o.length && !/shortening|assorted|signage/.test(s) && /oil|bottle/.test(s)) o.push('bottle');
+      return o; };
+    const LBL = {bottle:'Bottle Oil', spray:'Spray Oil', mayo:'Mayo', dressings:'Dressings'};
+    const MD = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+    const rows = shows.map(s => {
+      const plat = dec(s.platform), date = dec(s.date).replace(/^Air Date:\s*/i, '');
+      const items = [], orders = []; const set = new Set();
+      s.inventory.forEach(i => { if (i.type === 'header') { orders.push(dec(i.text)); return; } items.push({q: dec(i.qty), n: dec(i.item)}); cats(dec(i.item)).forEach(c => set.add(c)); });
+      // Air date: structured airDate first, else a date written in the card text ("premieres Oct 15, 2026").
+      let air = '', airIso = '', exact = false;
+      if (s.airDate) { airIso = s.airDate; exact = !!s.airExact; air = exact ? fd(s.airDate) : (s.airLabel || s.airDate.slice(0,7)); }
+      else { const m = date.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? (\d{1,2}), (\d{4})/);
+        if (m && !/filming|production/i.test(date)) { airIso = m[3] + '-' + String(MD[m[1].toLowerCase()]).padStart(2,'0') + '-' + m[2].padStart(2,'0'); exact = true; air = fd(airIso); } }
+      const what = (s.airWhat || (air ? date.replace(/\s*(on\s*)?(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.? \d{1,2}, \d{4}.*/,'') : '')).trim();
+      const ctx = air ? '' : date.replace(/^TBD[^A-Za-z0-9]*/, '');
+      let status = 'tbd', label = 'Air date TBD';
+      if (airIso) { const ad = new Date(airIso + 'T00:00:00'); if (exact && ad <= today) { status = 'aired'; label = 'Premiered · monitoring'; } else { status = 'dated'; label = exact ? 'Air date set' : 'Window set'; } }
+      const sent = s.propDate || '';
+      const days = sent ? Math.round((today - new Date(sent + 'T00:00:00')) / 864e5) : null;
+      const studio = plat.split(' · ')[0], fmt = /\bfilm\b|theatrical/i.test(plat) ? 'Film' : 'TV Series';
+      return { title: dec(s.title), studio, platFull: plat, format: fmt, items, orders, cats: [...set], sent, days, air, airWhat: what, airCtx: ctx,
+        airSort: airIso || (status === 'tbd' ? '9999' : ''), status, label, statusSort: {aired:0,dated:1,tbd:2}[status], note: dec(s.note || '') };
+    });
+    const $ = id => document.getElementById(id);
+    // Summary
+    const per = k => rows.filter(r => r.cats.includes(k)).length;
+    $('invSum').innerHTML = [[rows.length,'Titles sent'],[per('bottle'),'Bottle Oil'],[per('spray'),'Spray Oil'],[per('mayo'),'Mayo'],[per('dressings'),'Dressings'],[rows.filter(r=>r.status==='aired').length,'Premiered'],[rows.filter(r=>r.status==='dated').length,'Air date set']]
+      .map(([n,l]) => '<div><b>' + n + '</b><span>' + l + '</span></div>').join('');
+    let key = 'sent', dir = -1;
+    const norm = s => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]/g,'');
+    function view(){
+      const q = norm($('invQ').value.trim()), p = $('invP').value, st = $('invS').value;
+      return rows.filter(r => (!p || r.cats.includes(p)) && (!st || r.status === st) && (!q || norm([r.title,r.platFull,r.note,r.items.map(i=>i.n).join(' ')].join(' ')).includes(q)))
+        .sort((a,b) => { let x = a[key], y = b[key]; if (x === null || x === '') return 1; if (y === null || y === '') return -1; return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y))) * dir; });
+    }
+    function render(){
+      const v = view();
+      $('invT').querySelectorAll('th').forEach(th => th.dataset.k === key ? th.setAttribute('aria-sort', dir > 0 ? 'ascending' : 'descending') : th.removeAttribute('aria-sort'));
+      $('invT').tBodies[0].innerHTML = v.map(r => '<tr>' +
+        '<td><div class="t">' + esc(r.title) + '</div>' + (r.note ? '<div class="note">' + esc(r.note) + '</div>' : '') + '</td>' +
+        '<td>' + esc(r.studio) + (r.platFull !== r.studio ? '<div class="sub">' + esc(r.platFull.split(' · ').slice(1).join(' · ')) + '</div>' : '') + '</td>' +
+        '<td>' + r.format + '</td>' +
+        '<td><ul>' + r.items.map(i => '<li><span class="q">' + esc(i.q) + '</span> ' + esc(i.n) + '</li>').join('') + r.orders.map(o => '<li class="ord">' + esc(o) + '</li>').join('') + '</ul>' +
+          (r.cats.length ? '<div class="chips">' + ['bottle','spray','mayo','dressings'].filter(c => r.cats.includes(c)).map(c => '<span class="chip">' + LBL[c] + '</span>').join('') + '</div>' : '') + '</td>' +
+        '<td class="num">' + (r.sent ? fd(r.sent) : '<span class="sub">Not recorded</span>') + '</td>' +
+        '<td class="num">' + (r.days === null ? '—' : r.days) + '</td>' +
+        '<td>' + (r.air ? '<div class="num">' + esc(r.air) + '</div>' + (r.airWhat ? '<div class="sub">' + esc(r.airWhat) + '</div>' : '') : 'TBD' + (r.airCtx ? '<div class="sub">' + esc(r.airCtx) + '</div>' : '')) + '</td>' +
+        '<td><span class="st ' + r.status + '">' + r.label + '</span></td>' + '</tr>').join('') || '<tr><td colspan="8" class="sub">No titles match.</td></tr>';
+      $('invN').textContent = v.length + ' of ' + rows.length + ' titles';
+    }
+    $('invT').querySelectorAll('th').forEach(th => { if (th.hasAttribute('data-nosort')) { th.style.cursor = 'default'; return; }
+      th.addEventListener('click', () => { const k = th.dataset.k; dir = key === k ? -dir : (k === 'sent' || k === 'days' ? -1 : 1); key = k; render(); }); });
+    ['invQ','invP','invS'].forEach(id => $(id).addEventListener('input', render));
+    $('invCsv').addEventListener('click', () => {
+      const q = s => '"' + String(s).replace(/"/g,'""') + '"';
+      const lines = [['Title','Studio / Platform','Format','Product Sent','Products','Order','Sent','Days Out','Pending Air Date','Air Details','Status','Notes'].map(q).join(',')]
+        .concat(view().map(r => [r.title, r.platFull, r.format, r.items.map(i => i.q + ' ' + i.n).join('; '), r.cats.map(c => LBL[c]).join('; '), r.orders.join('; '), r.sent, r.days ?? '', r.air || 'TBD', r.airWhat || r.airCtx, r.label, r.note].map(q).join(',')));
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/csv'})); a.download = 'chosen-foods-inventory.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+    render();
+  })();
   // Secured / In the Pipeline switch (remembered in the URL as ?view=pipeline). Header Secured / In pipeline numbers open the matching list.
   // Coming up: next 5 pipeline titles with a known air date or release window (show-data airDate), soonest first.
   (function(){
