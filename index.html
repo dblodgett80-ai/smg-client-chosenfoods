@@ -134,6 +134,12 @@
   .view-switch{display:flex; gap:6px; margin:0 auto 26px; padding:4px; border:1px solid var(--line); border-radius:100px; width:fit-content; max-width:100%; background:var(--surface);}
   .view-switch button{background:none; border:0; border-radius:100px; padding:9px 20px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-dim); cursor:pointer; white-space:nowrap;}
   .view-switch button span{opacity:.75;}
+  .year-switch{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 22px;}
+  .year-switch button{background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:8px 16px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.08em; color:var(--text-dim); cursor:pointer; white-space:nowrap;}
+  .year-switch button span{opacity:.7; margin-left:2px;}
+  .year-switch button:hover{border-color:var(--gold); color:var(--text);}
+  .year-switch button[aria-selected="true"]{background:var(--gold); border-color:var(--gold); color:#1b1508;}
+  .year-switch button:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
   .view-switch button[aria-selected="true"]{background:var(--gold); color:#1b1508;}
   .view-switch button:focus-visible, .stat-link:focus-visible{outline:2px solid var(--gold); outline-offset:3px;}
   .stat-link{cursor:pointer; border-radius:8px;}
@@ -546,6 +552,13 @@
       <h2 id="secured-h2">Secured Integrations</h2>
       <span class="count" id="securedCount2"></span>
       <span class="desc">Verified on-screen placements with timestamped video proof, 2023&ndash;present</span>
+    </div>
+    <div class="year-switch" role="tablist" aria-label="Secured integrations by air year" id="year-switch">
+      <button type="button" role="tab" data-y="">All years</button>
+      <button type="button" role="tab" data-y="2026">2026 <span></span></button>
+      <button type="button" role="tab" data-y="2025">2025 <span></span></button>
+      <button type="button" role="tab" data-y="2024">2024 <span></span></button>
+      <button type="button" role="tab" data-y="2023">2023 <span></span></button>
     </div>
     <div id="securedGrid"></div>
   </section>
@@ -1073,6 +1086,26 @@
   ptabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.ptab); history.replaceState(null, '', location.pathname + location.search + (b.dataset.ptab !== 'current' ? '#' + b.dataset.ptab : '')); }));
   showTab(['#agenda', '#inventory'].includes(location.hash) ? location.hash.slice(1) : 'current');
 
+
+  // Year buttons under Secured Integrations: drive the Year filter, show per-year counts (by air year) for the current product/format/search.
+  (function(){
+    const Y = document.getElementById('f-year'), bar = document.getElementById('year-switch');
+    if (!Y || !bar) return;
+    const btns = [...bar.querySelectorAll('button')]; let all = null;
+    function sync(){
+      btns.forEach(b => b.setAttribute('aria-selected', String(b.dataset.y === Y.value)));
+      // Secured titles per air year for the current Product / Format selection.
+      if (!all) all = [...document.querySelectorAll('#securedGrid [data-format]')];
+      const pv = document.getElementById('f-product').value, fv = document.getElementById('f-format').value;
+      const ok = c => (!pv || (c.dataset.products || '').split(' ').includes(pv)) && (!fv || c.dataset.format === fv);
+      btns.forEach(b => { const sp = b.querySelector('span'); if (!sp) return;
+        sp.textContent = '(' + all.filter(c => ok(c) && (c.dataset.years || '').split(' ').includes(b.dataset.y)).length + ')'; });
+    }
+    btns.forEach(b => b.addEventListener('click', () => { Y.value = b.dataset.y; Y.dispatchEvent(new Event('change')); sync(); }));
+    Y.addEventListener('change', () => setTimeout(sync));
+    const orig = window.__applyFilters; if (orig) window.__applyFilters = function(){ const r = orig.apply(this, arguments); setTimeout(sync); return r; };
+    setTimeout(sync, 50);
+  })();
   // Inventory tab: strict list of every send in show-data (no showcards). Sortable, searchable, CSV export.
   (function(){
     const shows = JSON.parse(document.getElementById('show-data').textContent).shows;
