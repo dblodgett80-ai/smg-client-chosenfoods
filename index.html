@@ -138,6 +138,21 @@
   .stat-link{cursor:pointer; border-radius:8px;}
   .stat-link:hover .num{color:var(--gold-strong);}
   .stat-link .lbl{text-decoration:underline; text-decoration-color:var(--line); text-underline-offset:4px;}
+  .search-wrap{position:relative; flex:1 1 260px; max-width:360px;}
+  .search-ico{position:absolute; left:13px; top:50%; width:15px; height:15px; transform:translateY(-50%); color:var(--gold); pointer-events:none;}
+  #f-search{width:100%; box-sizing:border-box; background:var(--surface-raised); color:var(--text); border:1px solid var(--line); border-radius:100px; padding:8px 14px 8px 36px; font-family:'Manrope',sans-serif; font-size:13px; font-weight:600;}
+  #f-search::placeholder{color:var(--text-dim); font-weight:500;}
+  #f-search:focus{outline:2px solid var(--gold); outline-offset:2px;}
+  .search-pop{position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:40; background:var(--surface-raised); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); max-height:340px; overflow-y:auto; text-align:left;}
+  .search-pop button{display:flex; width:100%; justify-content:space-between; align-items:baseline; gap:12px; background:none; border:0; border-top:1px solid var(--line); padding:10px 14px; cursor:pointer; color:var(--text); text-align:left;}
+  .search-pop button:first-child{border-top:0;}
+  .search-pop button:hover, .search-pop button.act{background:rgba(200,164,93,.12);}
+  .search-pop .st{font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .search-pop .sm{display:block; font-size:11.5px; color:var(--text-dim); margin-top:2px;}
+  .search-pop .sk{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-strong); white-space:nowrap;}
+  .search-pop .none{padding:12px 14px; font-size:13px; color:var(--text-dim);}
+  .flash{outline:2px solid var(--gold-strong); outline-offset:4px; transition:outline-color 1.5s;}
+  @media (max-width:640px){ .search-wrap{max-width:none; flex-basis:100%;} }
   .h2-sel{color:var(--gold-strong); font-weight:500;}
   .page-tabs{display:flex; gap:28px; margin:26px 0 0; border-bottom:1px solid var(--line);}
   .ptab{background:none; border:0; border-bottom:2px solid transparent; padding:12px 0 10px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-dim); cursor:pointer;}
@@ -425,6 +440,11 @@
 </div>
 <div class="filter-shell">
   <div class="filters" id="filters" role="group" aria-label="Filter placements">
+    <div class="search-wrap">
+      <svg class="search-ico" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="search" id="f-search" placeholder="Search titles, networks, cast" autocomplete="off" aria-label="Search titles" aria-controls="search-pop" aria-expanded="false">
+      <div class="search-pop" id="search-pop" role="listbox" hidden></div>
+    </div>
     <span class="filters-lbl">Filter</span>
     <select id="f-product" aria-label="Product">
       <option value="">All products</option>
@@ -786,16 +806,22 @@
   const NAMES = { bottle: 'Bottle Oil', spray: 'Spray Oil', mayo: 'Mayo', dressings: 'Dressings' };
   const secRoot = document.getElementById('securedGrid'), pipe = document.getElementById('sentGrid');
   let secCards = null;
-  const match = (c, p, f, y) => (!p || (c.dataset.products || '').split(' ').includes(p)) && (!f || c.dataset.format === f) && (!y || (c.dataset.years || '').split(' ').includes(y));
+  const S = document.getElementById('f-search'), POP = document.getElementById('search-pop');
+  const norm = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const hay = c => c.dataset.hay || (c.dataset.hay = norm([...c.querySelectorAll('h3, .vcard-meta, .platform, .vcard-cast, .note')].map(e => e.textContent).join(' ')));
+  let QT = [];
+  const qmatch = c => QT.every(t => hay(c).includes(t));
+  const match = (c, p, f, y, useQ = true) => (!useQ || qmatch(c)) && (!p || (c.dataset.products || '').split(' ').includes(p)) && (!f || c.dataset.format === f) && (!y || (c.dataset.years || '').split(' ').includes(y));
   const latestYear = c => (c.dataset.years || '').split(' ').filter(Boolean).sort().pop() || 'TBD';
   function emptyNote(after, show, text){
     let e = after.parentNode.querySelector('.filter-empty');
     if (show && !e) { e = document.createElement('div'); e.className = 'filter-empty'; after.after(e); }
     if (e) { e.textContent = text; e.hidden = !show; }
   }
-  function apply(){
+  let apply = function(){
     if (!secCards) secCards = [...secRoot.children].filter(c => c.dataset.format);
-    const p = P.value, f = F.value, y = Y.value, on = !!(p || f || y);
+    QT = S.value.trim().split(/\s+/).map(norm).filter(Boolean);
+    const p = P.value, f = F.value, y = Y.value, on = !!(p || f || y || QT.length);
     // Secured: group matching cards by year (selected year, else each card's latest air year), newest first.
     const hits = secCards.filter(c => match(c, p, f, y));
     const byYr = {};
@@ -823,7 +849,7 @@
     if (p) notes.push('Products for 2023\u20132025 placements come from the placement descriptions; a few placements don\u2019t name a product and show only under All products.');
     const note = document.getElementById('f-note'); note.hidden = !notes.length; note.textContent = notes.join(' ');
     // Section titles name the active selection, e.g. "Secured Integrations | Mayo".
-    const sel = [p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV' : '', y].filter(Boolean).join(' \u00b7 ');
+    const sel = [QT.length ? '\u201c' + S.value.trim() + '\u201d' : '', p ? NAMES[p] : '', f === 'film' ? 'Film' : f === 'tv' ? 'TV' : '', y].filter(Boolean).join(' \u00b7 ');
     const tag = sel ? ` <span class="h2-sel">| ${sel}</span>` : '';
     document.getElementById('secured-h2').innerHTML = 'Secured Integrations' + tag;
     document.getElementById('pipeline-h2').innerHTML = 'In the Pipeline' + tag;
@@ -844,7 +870,7 @@
     setStat('totalImpressions', allImp ? fmt(allImp) : '\u2014', on ? 'Campaign Impressions (selection)' : 'Campaign Impressions');
     // Year-over-year bar chart: titles matching Product + Format, every year shown, selected year highlighted.
     const byYear = { 2023: 0, 2024: 0, 2025: 0, 2026: 0 };
-    secCards.filter(c => match(c, p, f, '')).forEach(c => Object.entries(JSON.parse(c.dataset.impy || '{}')).forEach(([k, v]) => { if (k in byYear) byYear[k] += v; }));
+    secCards.filter(c => match(c, p, f, '', false)).forEach(c => Object.entries(JSON.parse(c.dataset.impy || '{}')).forEach(([k, v]) => { if (k in byYear) byYear[k] += v; }));
     const cur = String(new Date().getFullYear()), yrs = Object.keys(byYear).sort(), max = Math.max(1, ...yrs.map(k => byYear[k]));
     const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const cols = yrs.map(k => `<div class="yoy-col${k === cur ? ' ytd' : ''}${k === y ? ' sel' : ''}"><span class="yoy-val">${byYear[k] ? fmt(byYear[k]) : '\u2014'}</span><div class="yoy-bar" style="height:${(byYear[k] / max * 84).toFixed(1)}%"></div></div>`).join('');
@@ -861,16 +887,62 @@
       + `<div class="yoy-chart${y ? ' has-sel' : ''}" style="--n:${yrs.length}" role="img" aria-label="Impressions by year">${cols}</div><div class="yoy-axis" style="--n:${yrs.length}">${axis}</div>`;
     document.querySelectorAll('video').forEach(v => v.pause());
     const q = new URLSearchParams(location.search);
-    [['product', p], ['format', f], ['year', y]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
+    [['product', p], ['format', f], ['year', y], ['q', S.value.trim()]].forEach(([k, v]) => v ? q.set(k, v) : q.delete(k)); q.delete('v');
     const qs = q.toString(); history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   }
+  // Search suggestions: up to 8 matching titles; picking one opens its list and scrolls to the card.
+  let act = -1, picks = [];
+  function suggest(){
+    if (!QT.length || document.activeElement !== S) { POP.hidden = true; S.setAttribute('aria-expanded', 'false'); return; }
+    const p = P.value, f = F.value, y = Y.value, seen = new Set();
+    picks = [];
+    secCards.forEach(c => { if (match(c, p, f, y)) picks.push({ c, kind: 'secured', label: latestYear(c) === 'TBD' ? 'Secured' : 'Secured \u00b7 ' + latestYear(c) }); });
+    [...pipe.children].forEach(c => { if (c.dataset.format && match(c, p, f, y)) picks.push({ c, kind: 'pipeline', label: 'In pipeline' }); });
+    picks = picks.filter(x => { const k = x.kind + x.c.querySelector('h3').textContent + x.label; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    act = -1;
+    const meta = c => (c.querySelector('.vcard-meta, .platform') || {}).textContent || '';
+    POP.innerHTML = picks.length ? picks.map((x, i) => `<button type="button" role="option" data-i="${i}"><span><span class="st">${x.c.querySelector('h3').innerHTML}</span><span class="sm">${meta(x.c)}</span></span><span class="sk">${x.label}</span></button>`).join('')
+      : `<div class="none">No titles match \u201c${S.value.trim().replace(/</g, '&lt;')}\u201d${(P.value || F.value || Y.value) ? ' with the current filters' : ''}.</div>`;
+    POP.hidden = false; S.setAttribute('aria-expanded', 'true');
+  }
+  function go(i){
+    const x = picks[i]; if (!x) return;
+    POP.hidden = true;
+    if (window.__showView) window.__showView(x.kind);
+    requestAnimationFrame(() => {
+      x.c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      x.c.classList.add('flash'); setTimeout(() => x.c.classList.remove('flash'), 2200);
+    });
+  }
+  POP.addEventListener('mousedown', e => { const b = e.target.closest('button[data-i]'); if (b) { e.preventDefault(); go(+b.dataset.i); } });
+  S.addEventListener('input', () => { apply(); suggest(); });
+  S.addEventListener('focus', suggest);
+  S.addEventListener('blur', () => setTimeout(() => { POP.hidden = true; }, 120));
+  S.addEventListener('keydown', e => {
+    const bs = [...POP.querySelectorAll('button')];
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!bs.length) return; act = (act + (e.key === 'ArrowDown' ? 1 : -1) + bs.length) % bs.length; bs.forEach((b, i) => b.classList.toggle('act', i === act)); }
+    else if (e.key === 'Enter') { e.preventDefault(); go(act >= 0 ? act : 0); }
+    else if (e.key === 'Escape') { if (S.value) { S.value = ''; apply(); } POP.hidden = true; }
+  });
+  // If the open list has no matches but the other one does, switch to it while searching.
+  const _apply = apply;
+  apply = function(){
+    _apply();
+    if (!QT.length || !window.__showView) return;
+    const secN = secCards.filter(c => match(c, P.value, F.value, Y.value)).length;
+    const pipeN = [...pipe.children].filter(c => c.dataset.format && !c.hidden).length;
+    const cur = document.getElementById('sec-pipeline').hidden ? 'secured' : 'pipeline';
+    if (cur === 'secured' && !secN && pipeN) window.__showView('pipeline');
+    if (cur === 'pipeline' && !pipeN && secN) window.__showView('secured');
+  };
   window.__applyFilters = apply;
   const q = new URLSearchParams(location.search);
   if (NAMES[q.get('product')]) P.value = q.get('product');
   if (['tv', 'film'].includes(q.get('format'))) F.value = q.get('format');
   if (['2023', '2024', '2025', '2026'].includes(q.get('year'))) Y.value = q.get('year');
+  if (q.get('q')) S.value = q.get('q');
   [P, F, Y].forEach(s => s.addEventListener('change', apply));
-  C.addEventListener('click', () => { P.value = ''; F.value = ''; Y.value = ''; apply(); });
+  C.addEventListener('click', () => { P.value = ''; F.value = ''; Y.value = ''; S.value = ''; apply(); });
 })();
 </script>
 
@@ -928,6 +1000,7 @@
   ptabs.forEach(b => b.addEventListener('click', () => { showTab(b.dataset.ptab); history.replaceState(null, '', location.pathname + location.search + (b.dataset.ptab === 'agenda' ? '#agenda' : '')); }));
   showTab(location.hash === '#agenda' ? 'agenda' : 'current');
   // Secured / In the Pipeline switch (remembered in the URL as ?view=pipeline). Header Secured / In pipeline numbers open the matching list.
+  window.__showView = (v, s) => showView(v, s);
   function showView(v, scroll){
     document.querySelectorAll('#view-switch button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === v)));
     document.getElementById('sec-secured').hidden = v !== 'secured';
